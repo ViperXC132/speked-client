@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "spekedclient",
+  "version": "1.0.0",
+  "name": "Speked Client",
+  "description": "A clean, Vulkan-safe Fabric 1.21.11 QoL client with a Lunar-inspired glass UI.",
+  "authors": ["ViperXC132"],
+  "contact": {
+    "sources": "https://github.com/ViperXC132/speked-client"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.spekedclient.SpekedClient"
+    ]
+  },
+  "mixins": [
+    "spekedclient.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.2",
+    "fabric-api": "*",
+    "minecraft": "1.21.11",
+    "java": ">=21"
+  }
+}
