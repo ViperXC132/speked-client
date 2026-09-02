@@ -1,5 +1,8 @@
 package com.spekedclient.module;
 
+import com.google.gson.JsonElement;
+import com.spekedclient.config.ConfigManager;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,9 +32,7 @@ public abstract class Module {
         if (enabled) onEnable(); else onDisable();
     }
 
-    public final void toggle() {
-        setEnabled(!enabled);
-    }
+    public final void toggle() { setEnabled(!enabled); }
 
     protected void onEnable() {}
     protected void onDisable() {}
@@ -44,18 +45,40 @@ public abstract class Module {
     public int keyCode() { return keyCode; }
     public void setKeyCode(int keyCode) { this.keyCode = keyCode; }
 
-    public Map<String, Object> settings() {
-        return Collections.unmodifiableMap(settings);
-    }
+    public Map<String, Object> settings() { return Collections.unmodifiableMap(settings); }
 
-    protected final <T> void setting(String key, T value) {
-        settings.put(key, value);
-    }
+    protected final <T> void setting(String key, T value) { settings.put(key, value); }
 
     @SuppressWarnings("unchecked")
     protected final <T> T getSetting(String key, Class<T> type, T fallback) {
         Object value = settings.get(key);
         return type.isInstance(value) ? (T) value : fallback;
+    }
+
+    /** Applies one JSON value while preserving the setting's declared Java type. */
+    public final void loadSetting(String key, JsonElement json) {
+        if (!settings.containsKey(key) || json == null || json.isJsonNull()) return;
+        Object current = settings.get(key);
+        try {
+            if (current instanceof Boolean) settings.put(key, json.getAsBoolean());
+            else if (current instanceof Integer) settings.put(key, json.getAsInt());
+            else if (current instanceof Long) settings.put(key, json.getAsLong());
+            else if (current instanceof Float) settings.put(key, json.getAsFloat());
+            else if (current instanceof Double) settings.put(key, json.getAsDouble());
+            else if (current instanceof String) settings.put(key, json.getAsString());
+        } catch (RuntimeException ignored) {
+            // A malformed individual setting must never prevent the rest of the client loading.
+        }
+    }
+
+    /** Updates a setting from the GUI and immediately persists the module. */
+    public final void setSetting(String key, Object value) {
+        if (!settings.containsKey(key)) return;
+        Object current = settings.get(key);
+        if (current == null || value == null || current.getClass().isInstance(value)) {
+            settings.put(key, value);
+            ConfigManager.saveModuleNow(this);
+        }
     }
 
     public void resetSettings() {}
