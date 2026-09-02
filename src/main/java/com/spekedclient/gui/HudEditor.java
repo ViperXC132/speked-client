@@ -5,6 +5,7 @@ import com.spekedclient.hud.HudModule;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public final class HudEditor extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         context.fill(0, 0, width, height, 0x88060A14);
         context.drawTextWithShadow(textRenderer, Text.literal("HUD EDITOR"), 14, 12, 0xFFC8D0E0);
-        context.drawTextWithShadow(textRenderer, Text.literal("Drag modules · wheel = scale · LMB settings · ESC back"), 14, 26, 0xFF8892A8);
+        context.drawTextWithShadow(textRenderer, Text.literal("Drag modules · wheel = scale · double-click = settings · ESC back"), 14, 26, 0xFF8892A8);
 
         for (HudModule hud : hudModules) {
             hud.syncLayout();
@@ -106,12 +107,12 @@ public final class HudEditor extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 256) {
+    public boolean keyPressed(KeyInput input) {
+        if (input.key() == 256) {
             client.setScreen(parent);
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(input);
     }
 
     @Override
