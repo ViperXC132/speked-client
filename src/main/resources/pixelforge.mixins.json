@@ -4,7 +4,8 @@
   "package": "com.spekedclient.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "TitleScreenMixin"
+    "TitleScreenMixin",
+    "InGameHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1
