@@ -4,6 +4,7 @@ import com.spekedclient.module.Module;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
@@ -86,12 +87,12 @@ public final class ModuleSettingsScreen extends Screen {
     private static double clamp(double value, double min, double max) { return Math.max(min, Math.min(max, value)); }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 256) {
+    public boolean keyPressed(KeyInput input) {
+        if (input.key() == 256) {
             client.setScreen(parent);
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(input);
     }
 
     @Override
