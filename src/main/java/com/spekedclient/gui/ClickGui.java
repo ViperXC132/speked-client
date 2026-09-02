@@ -14,6 +14,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.HashSet;
 import java.util.Set;
 
+/** Lunar-style in-game module browser with real per-module setting controls. */
 public final class ClickGui extends Screen {
     private final Set<Category> collapsed = new HashSet<>();
     private TextFieldWidget search;
@@ -33,8 +34,12 @@ public final class ClickGui extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         context.fill(0, 0, width, height, 0x99060A14);
         context.drawTextWithShadow(textRenderer, Text.literal("SPEKED CLIENT"), 18, 20, RenderUtil.TEXT);
-        context.drawTextWithShadow(textRenderer, Text.literal("Right Shift · LMB toggle · RMB collapse"), 18, 34, RenderUtil.DIM);
+        context.drawTextWithShadow(textRenderer, Text.literal("LMB toggle · RMB settings/collapse · HUD EDITOR"), 18, 34, RenderUtil.DIM);
         RenderUtil.panelSoft(context, width / 2 - 175, 14, 350, 32);
+
+        int editorX = width - 110;
+        RenderUtil.pill(context, editorX, 18, 96, 24, 0xD0121622, 0x481E2540);
+        context.drawTextWithShadow(textRenderer, Text.literal("HUD EDITOR"), editorX + 11, 25, RenderUtil.TEXT);
 
         String query = search == null ? "" : search.getText().trim().toLowerCase();
         Category[] categories = Category.values();
@@ -66,8 +71,11 @@ public final class ClickGui extends Screen {
             boolean hover = mouseX >= x + 6 && mouseX < x + w - 6 && mouseY >= ry && mouseY < ry + 22;
             int fill = hover ? 0xE0181D2B : 0xA0101420;
             RenderUtil.pill(context, x + 6, ry, w - 12, 22, fill, 0x201E2540);
-            context.drawTextWithShadow(textRenderer, Text.literal(module.name()), x + 12, ry + 7, module.enabled() ? RenderUtil.ACCENT_HOVER : RenderUtil.TEXT);
-            context.drawTextWithShadow(textRenderer, Text.literal(module.enabled() ? "ON" : "OFF"), x + w - 37, ry + 7, module.enabled() ? RenderUtil.ACCENT_HOVER : RenderUtil.MUTED);
+            context.drawTextWithShadow(textRenderer, Text.literal(module.name()), x + 12, ry + 7,
+                    module.enabled() ? RenderUtil.ACCENT_HOVER : RenderUtil.TEXT);
+            context.drawTextWithShadow(textRenderer, Text.literal(module.enabled() ? "ON" : "OFF"), x + w - 42, ry + 7,
+                    module.enabled() ? RenderUtil.ACCENT_HOVER : RenderUtil.MUTED);
+            context.drawTextWithShadow(textRenderer, Text.literal("⚙"), x + w - 18, ry + 7, RenderUtil.DIM);
             row++;
         }
     }
@@ -77,6 +85,13 @@ public final class ClickGui extends Screen {
         if (search != null && search.mouseClicked(click, doubled)) return true;
         int button = click.buttonInfo().button();
         if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT && button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) return super.mouseClicked(click, doubled);
+
+        int editorX = width - 110;
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && inside(click.x(), click.y(), editorX, 18, 96, 24)) {
+            client.setScreen(new HudEditor(this));
+            return true;
+        }
+
         String query = search == null ? "" : search.getText().trim().toLowerCase();
         Category[] categories = Category.values();
         int columnWidth = Math.max(150, (width - 48) / 4);
@@ -92,17 +107,20 @@ public final class ClickGui extends Screen {
                 return true;
             }
             if (collapsed.contains(category)) continue;
+
             var modules = SpekedClient.get().modules().byCategory(category).stream()
                     .filter(module -> query.isEmpty() || module.name().toLowerCase().contains(query) || module.id().contains(query))
                     .limit(7).toList();
             for (int row = 0; row < modules.size(); row++) {
-                if (inside(click.x(), click.y(), x + 6, y + 30 + row * 24, w - 12, 22)) {
-                    if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-                        modules.get(row).toggle();
-                        SpekedClient.get().config().save();
-                    }
-                    return true;
+                if (!inside(click.x(), click.y(), x + 6, y + 30 + row * 24, w - 12, 22)) continue;
+                Module module = modules.get(row);
+                if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+                    module.toggle();
+                    SpekedClient.get().config().save();
+                } else {
+                    client.setScreen(new ModuleSettingsScreen(this, module));
                 }
+                return true;
             }
         }
         return super.mouseClicked(click, doubled);
@@ -113,7 +131,8 @@ public final class ClickGui extends Screen {
     }
 
     @Override
-    public void close() {
-        client.setScreen(null);
-    }
+    public boolean shouldPause() { return false; }
+
+    @Override
+    public void close() { client.setScreen(null); }
 }
