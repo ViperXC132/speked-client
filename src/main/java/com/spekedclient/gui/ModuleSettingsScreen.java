@@ -75,11 +75,24 @@ public final class ModuleSettingsScreen extends Screen {
     private void change(String key, int direction) {
         Object value = module.settings().get(key);
         Object next = value;
-        if (value instanceof Boolean b) next = !b;
-        else if (value instanceof Float f) next = clamp(f + direction * 0.25f, 0.25f, 4.0f);
-        else if (value instanceof Double d) next = clamp(d + direction * 0.25d, 0.0d, 4.0d);
-        else if (value instanceof Integer i) next = i + direction;
-        else if (value instanceof Long l) next = l + direction;
+        if (value instanceof Boolean b) {
+            next = !b;
+        } else if (value instanceof Float f) {
+            next = clamp(f + direction * 0.25f, 0.25f, 4.0f);
+        } else if (value instanceof Double d) {
+            next = clamp(d + direction * 0.25d, 0.0d, 4.0d);
+        } else if (value instanceof Integer i) {
+            if (key.equals("color")) {
+                int[] presets = {0xFFC8D0E0, 0xFFFFFFFF, 0xFF748FFF, 0xFF6DFF9A, 0xFFFFC857, 0xFFFF6B81};
+                int index = 0;
+                for (int i2 = 0; i2 < presets.length; i2++) if (presets[i2] == i) index = i2;
+                next = presets[Math.floorMod(index + direction, presets.length)];
+            } else {
+                next = i + direction;
+            }
+        } else if (value instanceof Long l) {
+            next = l + direction;
+        }
         if (next != value) module.setSetting(key, next);
     }
 
