@@ -16,12 +16,12 @@
     ]
   },
   "mixins": [
-    "spekedclient.mixins.json"
+    "pixelforge.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.18.2",
-    "fabric-api": "*",
+    "fabricloader": "0.18.2",
+    "fabric-api": "0.141.3+1.21.11",
     "minecraft": "1.21.11",
-    "java": ">=21"
+    "java": "21"
   }
 }
