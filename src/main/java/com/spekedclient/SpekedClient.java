@@ -30,6 +30,7 @@ public final class SpekedClient implements ClientModInitializer {
         instance = this;
         for (var module : HudModules.createAll()) register(module);
         register(new CustomCrosshairModule());
+        keybindManager.registerClickGui();
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             keybindManager.tick();
             moduleManager.tick();
