@@ -7,6 +7,7 @@ import com.spekedclient.hud.HudRenderer;
 import com.spekedclient.keybind.KeybindManager;
 import com.spekedclient.module.ModuleManager;
 import com.spekedclient.module.modules.hud.HudModules;
+import com.spekedclient.module.modules.visual.CustomCrosshairModule;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -27,10 +28,8 @@ public final class SpekedClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         instance = this;
-        for (var module : HudModules.createAll()) {
-            moduleManager.register(module);
-            keybindManager.register(module);
-        }
+        for (var module : HudModules.createAll()) register(module);
+        register(new CustomCrosshairModule());
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             keybindManager.tick();
             moduleManager.tick();
@@ -38,6 +37,11 @@ public final class SpekedClient implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> configManager.save());
         profileManager.ensureBuiltIns();
         configManager.load();
+    }
+
+    private void register(com.spekedclient.module.Module module) {
+        moduleManager.register(module);
+        keybindManager.register(module);
     }
 
     public static SpekedClient get() {
