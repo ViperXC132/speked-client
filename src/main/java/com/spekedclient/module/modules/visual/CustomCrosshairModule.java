@@ -22,6 +22,7 @@ public final class CustomCrosshairModule extends Module {
 
     public CustomCrosshairModule() {
         super("custom-crosshair", "Custom Crosshair", Category.VISUALS);
+        setEnabled(true);
     }
 
     public void render(DrawContext context) {
@@ -32,7 +33,7 @@ public final class CustomCrosshairModule extends Module {
 
     public void draw(DrawContext context, int centerX, int centerY) {
         int main = (color & 0x00FFFFFF) | ((opacity & 0xFF) << 24);
-        int outlineColor = (0x000000 | (((Math.min(255, opacity + 80)) & 0xFF) << 24));
+        int outlineColor = ((Math.min(255, opacity + 80)) << 24);
         switch (style) {
             case DOT -> rect(context, centerX - thickness / 2, centerY - thickness / 2, thickness, thickness, main, outlineColor);
             case CIRCLE -> drawCircle(context, centerX, centerY, size, main);
@@ -59,29 +60,23 @@ public final class CustomCrosshairModule extends Module {
     private void arm(DrawContext context, int cx, int cy, int dx, int dy, int thick, int main, int outlineColor) {
         if (dx != 0) {
             int x = dx < 0 ? cx + dx : cx + 1;
-            int width = Math.max(1, Math.abs(dx));
-            rect(context, x, cy - thick / 2, width, thick, main, outlineColor);
+            rect(context, x, cy - thick / 2, Math.max(1, Math.abs(dx)), thick, main, outlineColor);
         } else if (dy != 0) {
             int y = dy < 0 ? cy + dy : cy + 1;
-            int height = Math.max(1, Math.abs(dy));
-            rect(context, cx - thick / 2, y, thick, height, main, outlineColor);
+            rect(context, cx - thick / 2, y, thick, Math.max(1, Math.abs(dy)), main, outlineColor);
         }
     }
 
     private void rect(DrawContext context, int x, int y, int w, int h, int main, int outlineColor) {
-        if (outline) {
-            context.fill(x - 1, y - 1, x + w + 1, y + h + 1, outlineColor);
-        }
+        if (outline) context.fill(x - 1, y - 1, x + w + 1, y + h + 1, outlineColor);
         context.fill(x, y, x + w, y + h, main);
     }
 
     private void drawCircle(DrawContext context, int cx, int cy, int radius, int main) {
         int r = Math.max(2, radius);
-        for (int y = -r; y <= r; y++) {
-            for (int x = -r; x <= r; x++) {
-                int d = x * x + y * y;
-                if (d >= (r - 1) * (r - 1) && d <= r * r) RenderUtil.dot(context, cx + x, cy + y, main);
-            }
+        for (int y = -r; y <= r; y++) for (int x = -r; x <= r; x++) {
+            int d = x * x + y * y;
+            if (d >= (r - 1) * (r - 1) && d <= r * r) RenderUtil.dot(context, cx + x, cy + y, main);
         }
     }
 
