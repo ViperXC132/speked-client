@@ -3,8 +3,10 @@ package com.spekedclient;
 import com.spekedclient.config.ConfigManager;
 import com.spekedclient.config.ProfileManager;
 import com.spekedclient.event.EventBus;
+import com.spekedclient.hud.HudRenderer;
 import com.spekedclient.keybind.KeybindManager;
 import com.spekedclient.module.ModuleManager;
+import com.spekedclient.module.modules.hud.HudModules;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -20,10 +22,15 @@ public final class SpekedClient implements ClientModInitializer {
     private final KeybindManager keybindManager = new KeybindManager(moduleManager);
     private final ConfigManager configManager = new ConfigManager(moduleManager);
     private final ProfileManager profileManager = new ProfileManager(moduleManager);
+    private final HudRenderer hudRenderer = new HudRenderer(moduleManager);
 
     @Override
     public void onInitializeClient() {
         instance = this;
+        for (var module : HudModules.createAll()) {
+            moduleManager.register(module);
+            keybindManager.register(module);
+        }
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             keybindManager.tick();
             moduleManager.tick();
@@ -43,4 +50,5 @@ public final class SpekedClient implements ClientModInitializer {
     public KeybindManager keybinds() { return keybindManager; }
     public ConfigManager config() { return configManager; }
     public ProfileManager profiles() { return profileManager; }
+    public HudRenderer hud() { return hudRenderer; }
 }
